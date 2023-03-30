@@ -16,6 +16,7 @@ export default defineComponent({
     const cRef = ref(null);
     const lottieRef = ref(null);
     const compileLoading = ref(false);
+    const requestController = ref(null);
     let canvas;
     const initCanvas = () => {
       canvas = new fabric.Canvas("mainCanvas", { isDrawingMode: true });
@@ -39,11 +40,11 @@ export default defineComponent({
         if (targetLine.value) {
           if (
             !currentLine ||
-            (currentLine.type == "line" && currentLine.id !== targetLine.value)
+            (currentLine.type === "rect" && currentLine.id !== targetLine.value)
           ) {
             canvas.getObjects().forEach((obj) => {
-              if (obj.type === "line" && obj.id === targetLine.value) {
-                obj.set("stroke", "#E21818");
+              if (obj.type === "rect" && obj.id === targetLine.value) {
+                obj.set("stroke", "#FFB4B4");
                 canvas.renderAll();
               }
             });
@@ -62,13 +63,15 @@ export default defineComponent({
 
     const clearWhiteboard = () => {
       canvas.getObjects().forEach((obj) => {
-        if (obj.type === "line") {
-          obj.set("stroke", "#ffff");
+        if (obj.type === "rect") {
+          obj.set("stroke", "transparent");
           return;
         }
         canvas.remove(obj);
       });
       targetLine.value = 0;
+      requestController.value.abort()
+      requestController.value = null;
       canvas.renderAll();
     };
 
@@ -78,28 +81,26 @@ export default defineComponent({
         const bodyFormData = new FormData();
         bodyFormData.append("image", blob);
         compileLoading.value = true;
+        requestController.value = new AbortController();
         axios({
           method: "post",
           url: "https://localhost:7126/Home/HandwrittenCanvas",
           data: bodyFormData,
           headers: { "Content-Type": "multipart/form-data" },
+          signal: requestController.value.signal,
         })
           .then(function (response) {
             //handle success
-            console.log(response);
-            console.log("response.data.data", response.data.data);
             compileLoading.value = false;
             if (response.data.data.length) {
               compileResult.value = response.data.data.join(", ");
               displayFire();
             } else {
-
-              compileResult.value = "No matching results 📓  ";
+              compileResult.value = "No matching results 📔  ";
             }
           })
           .catch(function (response) {
             //handle error
-            console.log(response);
             compileLoading.value = false;
           });
       });
@@ -114,12 +115,14 @@ export default defineComponent({
 
     const drawTheGrid = () => {
       for (var i = 0; i < canvasWidth / grid; i++) {
-        const line = new fabric.Line([0, i * grid, canvasWidth, i * grid], {
-          type: "line",
-          stroke: "#ffff",
-          selectable: false,
-          strokeWidth: grid - 5,
-          perPixelTargetFind: true,
+        const line = new fabric.Rect({
+          left: 0,
+          top: grid * i,
+          height: grid - 5,
+          width: 717 - 10,
+          stroke: "transparent",
+          fill: "#fff",
+          strokeWidth: 10,
         });
         line.set("id", i + 1);
         canvas.add(line);
