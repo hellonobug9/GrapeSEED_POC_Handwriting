@@ -28,9 +28,11 @@ export default defineComponent({
           targetLine.value = currentLine && currentLine.id;
         }
         if (targetLine.value) {
-          if (!currentLine) {
+          if (
+            !currentLine ||
+            (currentLine.type == "line" && currentLine.id !== targetLine.value)
+          ) {
             canvas.getObjects().forEach((obj) => {
-              // console.log("typeof obj.id", obj.id);
               if (obj.type === "line" && obj.id === targetLine.value) {
                 obj.set("stroke", "#E21818");
                 canvas.renderAll();
@@ -88,8 +90,8 @@ export default defineComponent({
           type: "line",
           stroke: "#ffff",
           selectable: false,
-          strokeWidth: grid - 10,
-          perPixelTargetFind: true
+          strokeWidth: grid - 5,
+          perPixelTargetFind: true,
         });
         line.set("id", i + 1);
         canvas.add(line);
