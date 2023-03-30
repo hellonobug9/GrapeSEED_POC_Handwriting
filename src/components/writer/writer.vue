@@ -17,19 +17,21 @@
         Clear board
       </button>
     </div>
-    <canvas ref="cRef" id="mainCanvas" />
+    <div class="canvas-wrapper">
+      <canvas ref="cRef" id="mainCanvas" />
+      <Vue3Lottie
+        class="fire"
+        ref="lottieRef"
+        :animationData="CgJSON"
+        :height="400"
+        :width="400"
+        v-on:animCreated="handleAnimation"
+        :autoPlay="false"
+        :loop="false"
+      />
+    </div>
     <div class="result">
       <span class="title">Result:</span> {{ compileResult }}
-      <Vue3Lottie
-      class="fire"
-      ref="lottieRef"
-      :animationData="CgJSON"
-      :height="400"
-      :width="400"
-      v-on:animCreated="handleAnimation"
-      :autoPlay="false"
-      :loop="false"
-    />
     </div>
   </div>
 </template>

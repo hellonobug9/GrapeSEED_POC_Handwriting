@@ -70,7 +70,7 @@ export default defineComponent({
         canvas.remove(obj);
       });
       targetLine.value = 0;
-      requestController.value.abort()
+      requestController.value.abort();
       requestController.value = null;
       canvas.renderAll();
     };
@@ -106,7 +106,7 @@ export default defineComponent({
       });
     };
 
-    const displayFire = () => {
+    const displayFire = async () => {
       lottieRef.value.play();
       setTimeout(() => {
         lottieRef.value.stop();

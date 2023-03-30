@@ -3,7 +3,9 @@
 
 canvas {
   background-color: #ccc;
-  box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
+  box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px,
+    rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px,
+    rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
 }
 .actions {
   display: flex;
@@ -68,6 +70,10 @@ canvas {
   visibility: hidden;
 }
 
+.d-none {
+  display: none;
+}
+
 .result {
   font-size: 35px;
   color: rgb(129, 136, 144);
@@ -79,10 +85,14 @@ canvas {
   font-weight: bold;
 }
 
+.canvas-wrapper {
+  position: relative;
+}
+
 .fire {
   position: absolute;
-  top: 50%; /* position the top  edge of the element at the middle of the parent */
+  top: 70%; /* position the top  edge of the element at the middle of the parent */
   left: 50%; /* position the left edge of the element at the middle of the parent */
-
   transform: translate(-50%, -50%);
+  pointer-events: none;
 }
