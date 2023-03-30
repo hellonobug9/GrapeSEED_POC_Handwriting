@@ -1,12 +1,21 @@
 import { defineComponent, onMounted, ref, nextTick } from "vue";
 import { fabric } from "fabric";
+import { Vue3Lottie } from "vue3-lottie";
+import Spinner from "../spinner/spinner.vue";
+import CgJSON from "../../assets/cong.json";
+import axios from "axios";
 const canvasWidth = 717;
 const canvasHeight = 500;
 const grid = 100;
 export default defineComponent({
+  components: { Spinner, Vue3Lottie },
   setup: () => {
     const drawing = ref(false);
     const targetLine = ref(0);
+    const compileResult = ref("");
+    const cRef = ref(null);
+    const lottieRef = ref(null);
+    const compileLoading = ref(false);
     let canvas;
     const initCanvas = () => {
       canvas = new fabric.Canvas("mainCanvas", { isDrawingMode: true });
@@ -49,27 +58,6 @@ export default defineComponent({
         drawing.value = false;
         canvas.renderAll();
       });
-      // canvas.on("mouseover", function (e) {
-      //   console.log('OVER', e.target.id);
-      //   // e.target.set('stroke', 'red');
-      //   if (drawing.value && !targetLine.value) {
-      //     targetLine.value = e.target.id;
-      //     canvas.renderAll();
-      //   }
-
-      // });
-
-      // canvas.on("mouseout", function (e) {
-      //   console.log("OUT", e.target.id);
-      //   if (
-      //     drawing.value &&
-      //     targetLine.value &&
-      //     targetLine.value === e.target.id
-      //   ) {
-      //     e.target.set("stroke", "red");
-      //     canvas.renderAll();
-      //   }
-      // });
     };
 
     const clearWhiteboard = () => {
@@ -82,6 +70,46 @@ export default defineComponent({
       });
       targetLine.value = 0;
       canvas.renderAll();
+    };
+
+    const compileWhiteboard = () => {
+      cRef.value.toBlob(function (blob) {
+        // saveAs(blob, "myIMG.png");
+        const bodyFormData = new FormData();
+        bodyFormData.append("image", blob);
+        compileLoading.value = true;
+        axios({
+          method: "post",
+          url: "https://localhost:7126/Home/HandwrittenCanvas",
+          data: bodyFormData,
+          headers: { "Content-Type": "multipart/form-data" },
+        })
+          .then(function (response) {
+            //handle success
+            console.log(response);
+            console.log("response.data.data", response.data.data);
+            compileLoading.value = false;
+            if (response.data.data.length) {
+              compileResult.value = response.data.data.join(", ");
+              displayFire();
+            } else {
+
+              compileResult.value = "No matching results 📓  ";
+            }
+          })
+          .catch(function (response) {
+            //handle error
+            console.log(response);
+            compileLoading.value = false;
+          });
+      });
+    };
+
+    const displayFire = () => {
+      lottieRef.value.play();
+      setTimeout(() => {
+        lottieRef.value.stop();
+      }, 3000);
     };
 
     const drawTheGrid = () => {
@@ -102,6 +130,14 @@ export default defineComponent({
       initCanvas();
     });
 
-    return { clearWhiteboard };
+    return {
+      clearWhiteboard,
+      compileWhiteboard,
+      cRef,
+      compileResult,
+      compileLoading,
+      CgJSON,
+      lottieRef,
+    };
   },
 });

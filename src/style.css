@@ -10,14 +10,16 @@
 }
 html, body {
   height: 100%;
+  font-family: "JetBrains Mono", monospace;
 }
 body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  background: #FCBDB2;
+  background: #ffff;
   display: flex;
   justify-content: center;
-  align-items: center;
+  padding-top: 5rem;
+  background-color: #fff;
 }
 img, picture, video, canvas, svg {
   display: block;

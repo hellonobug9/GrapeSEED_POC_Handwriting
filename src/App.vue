@@ -1,5 +1,6 @@
 <script setup>
 import Writer from './components/writer/writer.vue';
+
 </script>
 
 <template>
