@@ -4,15 +4,34 @@
       <button
         class="btn"
         role="button"
-        :disabled="compileLoading"
-        @click="compileWhiteboard"
+        :disabled="azureCompileLoading"
+        @click="compileWhiteboardWithAzure"
       >
-        <div :class="[compileLoading && 'hidden']">Compile</div>
+        <div :class="['btn-title', azureCompileLoading && 'hidden']">
+          <div>Compile by Azure</div>
+          <div class="image"><img src="../../assets/azure-icon.png" /></div>
+        </div>
         <Spinner
-          v-show="compileLoading"
+          v-show="azureCompileLoading"
           style="width: 1.5rem; height: 1.5rem"
         />
       </button>
+      <button
+        class="btn"
+        role="button"
+        :disabled="cloudCompileLoading"
+        @click="compileWhiteboardWithCloud"
+      >
+        <div :class="['btn-title', cloudCompileLoading && 'hidden']">
+          <div>Compile by Cloud</div>
+          <div class="image"><img src="../../assets/cloud-icon.png" /></div>
+        </div>
+        <Spinner
+          v-show="cloudCompileLoading"
+          style="width: 1.5rem; height: 1.5rem"
+        />
+      </button>
+
       <button class="btn compile" role="button" @click="clearWhiteboard">
         Clear board
       </button>
@@ -31,7 +50,8 @@
       />
     </div>
     <div class="result">
-      <span class="title">Result:</span> {{ compileResult }}
+      <p><span class="title">Result:</span> {{ compileResult }}</p>
+      <p class="by" v-if="compileResultBy">Powered by {{compileResultBy}}</p>
     </div>
   </div>
 </template>

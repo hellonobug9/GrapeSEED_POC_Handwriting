@@ -7,16 +7,27 @@ import axios from "axios";
 const canvasWidth = 717;
 const canvasHeight = 500;
 const grid = 100;
+const cloudOptions = {
+  width: canvasWidth, //int, width of the writing area, default: undefined
+  height: canvasHeight, //int, height of the writing area, default: undefined
+  language: "en", //string, language of input trace, default: "zh_TW"
+  // numOfWords: 1, //int, number of words of input trace, default: undefined
+  numOfReturn: 2, //int, number of maximum returned results, default: undefined
+};
+
 export default defineComponent({
   components: { Spinner, Vue3Lottie },
   setup: () => {
     const drawing = ref(false);
     const targetLine = ref(0);
     const compileResult = ref("");
+    const compileResultBy = ref("");
     const cRef = ref(null);
     const lottieRef = ref(null);
-    const compileLoading = ref(false);
+    const azureCompileLoading = ref(false);
+    const cloudCompileLoading = ref(false);
     const requestController = ref(null);
+    const paths = ref([]);
     let canvas;
     const initCanvas = () => {
       canvas = new fabric.Canvas("mainCanvas", { isDrawingMode: true });
@@ -33,6 +44,8 @@ export default defineComponent({
     const registerEvent = () => {
       canvas.on("mouse:move", (event) => {
         if (!drawing.value) return;
+        const pointer = canvas.getPointer(event);
+        paths.value.push(pointer);
         const currentLine = event.target;
         if (!targetLine.value && currentLine) {
           targetLine.value = currentLine && currentLine.id;
@@ -59,6 +72,11 @@ export default defineComponent({
         drawing.value = false;
         canvas.renderAll();
       });
+      canvas.on("object:added", (event) => {
+        // drawing.value = false;
+        // canvas.renderAll();
+        console.log("new object", event);
+      });
     };
 
     const clearWhiteboard = () => {
@@ -70,17 +88,22 @@ export default defineComponent({
         canvas.remove(obj);
       });
       targetLine.value = 0;
-      requestController.value.abort();
-      requestController.value = null;
+      if (requestController.value) {
+        requestController.value.abort();
+        requestController.value = null;
+      }
+      if (paths.value.length) {
+        paths.value = [];
+      }
       canvas.renderAll();
     };
 
-    const compileWhiteboard = () => {
+    const compileWhiteboardWithAzure = () => {
       cRef.value.toBlob(function (blob) {
         // saveAs(blob, "myIMG.png");
         const bodyFormData = new FormData();
         bodyFormData.append("image", blob);
-        compileLoading.value = true;
+        azureCompileLoading.value = true;
         requestController.value = new AbortController();
         axios({
           method: "post",
@@ -91,7 +114,8 @@ export default defineComponent({
         })
           .then(function (response) {
             //handle success
-            compileLoading.value = false;
+            azureCompileLoading.value = false;
+            compileResultBy.value = "Microsoft Azure";
             if (response.data.data.length) {
               compileResult.value = response.data.data.join(", ");
               displayFire();
@@ -101,9 +125,35 @@ export default defineComponent({
           })
           .catch(function (response) {
             //handle error
-            compileLoading.value = false;
+            azureCompileLoading.value = false;
           });
       });
+    };
+
+    const compileWhiteboardWithCloud = () => {
+      cloudCompileLoading.value = true;
+      const listOfX = [];
+      const listOfY = [];
+      paths.value.forEach((point) => {
+        listOfX.push(point.x);
+        listOfY.push(point.y);
+      });
+      const trace = [[listOfX, listOfY]];
+      const callback = function (result, err) {
+        cloudCompileLoading.value = false;
+        if (err) {
+          throw err;
+        } else {
+          compileResultBy.value = "Google Cloud";
+          if (result.length) {
+            compileResult.value = result.join(", ");
+            displayFire();
+          } else {
+            compileResult.value = "No matching results 📔  ";
+          }
+        }
+      };
+      handwriting.recognize(trace, cloudOptions, callback);
     };
 
     const displayFire = async () => {
@@ -135,12 +185,15 @@ export default defineComponent({
 
     return {
       clearWhiteboard,
-      compileWhiteboard,
+      compileWhiteboardWithAzure,
       cRef,
       compileResult,
-      compileLoading,
+      azureCompileLoading,
       CgJSON,
       lottieRef,
+      compileWhiteboardWithCloud,
+      cloudCompileLoading,
+      compileResultBy
     };
   },
 });
