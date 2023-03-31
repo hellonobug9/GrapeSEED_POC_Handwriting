@@ -8,7 +8,7 @@
         @click="compileWhiteboardWithAzure"
       >
         <div :class="['btn-title', azureCompileLoading && 'hidden']">
-          <div>Compile by Azure</div>
+          <div>Detect by Azure</div>
           <div class="image"><img src="../../assets/azure-icon.png" /></div>
         </div>
         <Spinner
@@ -23,7 +23,7 @@
         @click="compileWhiteboardWithCloud"
       >
         <div :class="['btn-title', cloudCompileLoading && 'hidden']">
-          <div>Compile by Cloud</div>
+          <div>Detect by Cloud</div>
           <div class="image"><img src="../../assets/cloud-icon.png" /></div>
         </div>
         <Spinner
