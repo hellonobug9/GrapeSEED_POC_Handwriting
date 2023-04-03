@@ -1,7 +1,6 @@
 import { defineComponent, onMounted, ref, nextTick, watch } from "vue";
 import Slider from "@vueform/slider";
 import { fabric } from "fabric";
-import { saveAs } from "file-saver";
 import { Vue3Lottie } from "vue3-lottie";
 import Spinner from "../spinner/spinner.vue";
 import CgJSON from "../../assets/cong.json";
@@ -130,7 +129,6 @@ export default defineComponent({
         format: "png",
       });
       const blob = dataURLtoBlob(base64Data);
-      saveAs(blob, "myIMG.png");
       const bodyFormData = new FormData();
       bodyFormData.append("image", blob);
       azureCompileLoading.value = true;
