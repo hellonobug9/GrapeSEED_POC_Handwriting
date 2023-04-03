@@ -1,22 +1,24 @@
-import { defineComponent, onMounted, ref, nextTick } from "vue";
+import { defineComponent, onMounted, ref, nextTick, watch } from "vue";
+import Slider from "@vueform/slider";
 import { fabric } from "fabric";
+import { saveAs } from "file-saver";
 import { Vue3Lottie } from "vue3-lottie";
 import Spinner from "../spinner/spinner.vue";
 import CgJSON from "../../assets/cong.json";
 import axios from "axios";
 const canvasWidth = 717;
 const canvasHeight = 500;
-const grid = 100;
+// const grid = 100;
 const cloudOptions = {
   width: canvasWidth, //int, width of the writing area, default: undefined
   height: canvasHeight, //int, height of the writing area, default: undefined
   language: "en", //string, language of input trace, default: "zh_TW"
-  // numOfWords: 1, //int, number of words of input trace, default: undefined
-  numOfReturn: 2, //int, number of maximum returned results, default: undefined
+  // numOfWords: 2, //int, number of words of input trace, default: undefined
+  // numOfReturn: 2, //int, number of maximum returned results, default: undefined
 };
 
 export default defineComponent({
-  components: { Spinner, Vue3Lottie },
+  components: { Spinner, Vue3Lottie, Slider },
   setup: () => {
     const drawing = ref(false);
     const targetLine = ref(0);
@@ -28,6 +30,7 @@ export default defineComponent({
     const cloudCompileLoading = ref(false);
     const requestController = ref(null);
     const paths = ref([]);
+    const lineSize = ref(70);
     let canvas;
     const initCanvas = () => {
       canvas = new fabric.Canvas("mainCanvas", { isDrawingMode: true });
@@ -73,20 +76,18 @@ export default defineComponent({
         canvas.renderAll();
       });
       canvas.on("object:added", (event) => {
-        // drawing.value = false;
-        // canvas.renderAll();
-        console.log("new object", event);
+        //console.log("new object", event);
       });
     };
 
     const clearWhiteboard = () => {
-      canvas.getObjects().forEach((obj) => {
-        if (obj.type === "rect") {
-          obj.set("stroke", "transparent");
-          return;
-        }
-        canvas.remove(obj);
-      });
+      // canvas.getObjects().forEach((obj) => {
+      //   if (obj.type === "rect") {
+      //     obj.set("stroke", "transparent");
+      //     return;
+      //   }
+      //   canvas.remove(obj);
+      // });
       targetLine.value = 0;
       if (requestController.value) {
         requestController.value.abort();
@@ -99,6 +100,11 @@ export default defineComponent({
     };
 
     const compileWhiteboardWithAzure = () => {
+      canvas.getObjects().forEach((obj) => {
+        if (obj.type === "rect") {
+          obj.set("stroke", "transparent");
+        }
+      });
       cRef.value.toBlob(function (blob) {
         // saveAs(blob, "myIMG.png");
         const bodyFormData = new FormData();
@@ -164,11 +170,16 @@ export default defineComponent({
     };
 
     const drawTheGrid = () => {
-      for (var i = 0; i < canvasWidth / grid; i++) {
+      canvas.getObjects().forEach((obj) => {
+        if (obj.type === "rect") {
+          canvas.remove(obj);
+        }
+      });
+      for (var i = 0; i < canvasWidth / lineSize.value; i++) {
         const line = new fabric.Rect({
           left: 0,
-          top: grid * i,
-          height: grid - 5,
+          top: lineSize.value * i,
+          height: lineSize.value - 5,
           width: 717 - 10,
           stroke: "transparent",
           fill: "#fff",
@@ -177,7 +188,13 @@ export default defineComponent({
         line.set("id", i + 1);
         canvas.add(line);
       }
+      canvas.renderAll();
     };
+
+    watch(lineSize, (currentVal) => {
+      clearWhiteboard();
+      drawTheGrid();
+    });
 
     onMounted(async () => {
       initCanvas();
@@ -193,7 +210,8 @@ export default defineComponent({
       lottieRef,
       compileWhiteboardWithCloud,
       cloudCompileLoading,
-      compileResultBy
+      compileResultBy,
+      lineSize,
     };
   },
 });

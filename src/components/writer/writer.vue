@@ -1,5 +1,11 @@
 <template>
   <div class="writer-page">
+    <div class="stuffs">
+      <div class="slider">
+        <Slider v-model="lineSize"/>
+        <p>Update line size</p>
+      </div>
+    </div>
     <div class="actions">
       <button
         class="btn"
@@ -56,4 +62,5 @@
   </div>
 </template>
 <script src="./writer.js"></script>
+<style src="@vueform/slider/themes/default.css"></style>
 <style scoped src="./writer.css"></style>

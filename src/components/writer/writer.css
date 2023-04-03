@@ -121,3 +121,13 @@ canvas {
   text-align: end;
   font-size: 20px;
 }
+
+.stuffs {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.stuffs .slider {
+  flex-basis: 40%;
+}
