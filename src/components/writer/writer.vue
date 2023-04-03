@@ -29,7 +29,7 @@
         @click="compileWhiteboardWithCloud"
       >
         <div :class="['btn-title', cloudCompileLoading && 'hidden']">
-          <div>Detect by Cloud</div>
+          <div>Detect by Google Input Tools</div>
           <div class="image"><img src="../../assets/cloud-icon.png" /></div>
         </div>
         <Spinner

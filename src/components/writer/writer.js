@@ -182,7 +182,7 @@ export default defineComponent({
         if (err) {
           throw err;
         } else {
-          compileResultBy.value = "Google Cloud";
+          compileResultBy.value = "Google Input Tools";
           if (result.length) {
             compileResult.value = result.join(", ");
             displayFire();
