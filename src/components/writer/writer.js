@@ -8,15 +8,28 @@ import CgJSON from "../../assets/cong.json";
 import axios from "axios";
 const canvasWidth = 717;
 const canvasHeight = 500;
+const canvasBg = "#ccc";
+const lineBg = "#ffff";
 // const grid = 100;
 const cloudOptions = {
   width: canvasWidth, //int, width of the writing area, default: undefined
   height: canvasHeight, //int, height of the writing area, default: undefined
   language: "en", //string, language of input trace, default: "zh_TW"
   // numOfWords: 2, //int, number of words of input trace, default: undefined
-  // numOfReturn: 2, //int, number of maximum returned results, default: undefined
+  numOfReturn: 5, //int, number of maximum returned results, default: undefined
 };
 
+function dataURLtoBlob(dataurl) {
+  var arr = dataurl.split(","),
+    mime = arr[0].match(/:(.*?);/)[1],
+    bstr = atob(arr[1]),
+    n = bstr.length,
+    u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+}
 export default defineComponent({
   components: { Spinner, Vue3Lottie, Slider },
   setup: () => {
@@ -33,7 +46,10 @@ export default defineComponent({
     const lineSize = ref(70);
     let canvas;
     const initCanvas = () => {
-      canvas = new fabric.Canvas("mainCanvas", { isDrawingMode: true });
+      canvas = new fabric.Canvas("mainCanvas", {
+        isDrawingMode: true,
+        backgroundColor: canvasBg,
+      });
       fabric.Object.prototype.transparentCorners = false;
       canvas.perPixelTargetFind = true;
       canvas.targetFindTolerance = true;
@@ -100,40 +116,58 @@ export default defineComponent({
     };
 
     const compileWhiteboardWithAzure = () => {
+      // transparent all element except path
       canvas.getObjects().forEach((obj) => {
         if (obj.type === "rect") {
+          obj.set("realStrokeColor", obj.stroke);
           obj.set("stroke", "transparent");
+          obj.set("fill", "transparent");
         }
       });
-      cRef.value.toBlob(function (blob) {
-        // saveAs(blob, "myIMG.png");
-        const bodyFormData = new FormData();
-        bodyFormData.append("image", blob);
-        azureCompileLoading.value = true;
-        requestController.value = new AbortController();
-        axios({
-          method: "post",
-          url: "https://gsconnecthandwritting.azurewebsites.net/api/HandwritingRecognition4?code=nzHjd9uK17mpW8kNJ44e8C1O8sWBIGWWQarcqeREoj_nAzFuJtENrw==",
-          data: bodyFormData,
-          headers: { "Content-Type": "multipart/form-data" },
-          signal: requestController.value.signal,
-        })
-          .then(function (response) {
-            //handle success
-            azureCompileLoading.value = false;
-            compileResultBy.value = "Microsoft Azure";
-            if (response.data.data.length) {
-              compileResult.value = response.data.data.join(", ");
-              displayFire();
-            } else {
-              compileResult.value = "No matching results 📔  ";
-            }
-          })
-          .catch(function (response) {
-            //handle error
-            azureCompileLoading.value = false;
-          });
+      canvas.backgroundColor = "transparent";
+      // transparent all element except path
+      const base64Data = canvas.toDataURL({
+        format: "png",
       });
+      const blob = dataURLtoBlob(base64Data);
+      saveAs(blob, "myIMG.png");
+      const bodyFormData = new FormData();
+      bodyFormData.append("image", blob);
+      azureCompileLoading.value = true;
+      requestController.value = new AbortController();
+      axios({
+        method: "post",
+        url: "https://gsconnecthandwritting.azurewebsites.net/api/HandwritingRecognition4?code=nzHjd9uK17mpW8kNJ44e8C1O8sWBIGWWQarcqeREoj_nAzFuJtENrw==",
+        data: bodyFormData,
+        headers: { "Content-Type": "multipart/form-data" },
+        signal: requestController.value.signal,
+      })
+        .then(function (response) {
+          //handle success
+          azureCompileLoading.value = false;
+          compileResultBy.value = "Microsoft Azure";
+          if (response.data.data.length) {
+            compileResult.value = response.data.data.join(", ");
+            displayFire();
+          } else {
+            compileResult.value = "No matching results 📔  ";
+          }
+        })
+        .catch(function (response) {
+          //handle error
+          azureCompileLoading.value = false;
+        });
+
+      // reset after transparent
+      canvas.getObjects().forEach((obj) => {
+        if (obj.type === "rect") {
+          obj.set("stroke", obj.realStrokeColor ? obj.realStrokeColor : "white");
+          obj.set("fill", lineBg);
+        }
+      });
+      canvas.backgroundColor = canvasBg;
+      // reset after transparent
+      canvas.renderAll();
     };
 
     const compileWhiteboardWithCloud = () => {
@@ -182,7 +216,7 @@ export default defineComponent({
           height: lineSize.value - 5,
           width: 717 - 10,
           stroke: "transparent",
-          fill: "#fff",
+          fill: lineBg,
           strokeWidth: 10,
         });
         line.set("id", i + 1);
