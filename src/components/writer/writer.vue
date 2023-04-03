@@ -2,7 +2,7 @@
   <div class="writer-page">
     <div class="stuffs">
       <div class="slider">
-        <Slider v-model="lineSize"/>
+        <Slider :min="20" :max="100" v-model="lineSize"/>
         <p>Update line size</p>
       </div>
     </div>
