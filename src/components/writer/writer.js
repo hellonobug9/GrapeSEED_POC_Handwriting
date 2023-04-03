@@ -113,7 +113,7 @@ export default defineComponent({
         requestController.value = new AbortController();
         axios({
           method: "post",
-          url: "https://localhost:7126/Home/HandwrittenCanvas",
+          url: "https://gsconnecthandwritting.azurewebsites.net/api/HandwritingRecognition4?code=nzHjd9uK17mpW8kNJ44e8C1O8sWBIGWWQarcqeREoj_nAzFuJtENrw==",
           data: bodyFormData,
           headers: { "Content-Type": "multipart/form-data" },
           signal: requestController.value.signal,
