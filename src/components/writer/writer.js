@@ -81,13 +81,13 @@ export default defineComponent({
     };
 
     const clearWhiteboard = () => {
-      // canvas.getObjects().forEach((obj) => {
-      //   if (obj.type === "rect") {
-      //     obj.set("stroke", "transparent");
-      //     return;
-      //   }
-      //   canvas.remove(obj);
-      // });
+      canvas.getObjects().forEach((obj) => {
+        if (obj.type === "rect") {
+          obj.set("stroke", "transparent");
+          return;
+        }
+        canvas.remove(obj);
+      });
       targetLine.value = 0;
       if (requestController.value) {
         requestController.value.abort();
